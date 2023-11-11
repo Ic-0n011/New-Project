@@ -24,3 +24,26 @@ def update_field():
 # Проверка столкновения муравьеда с муравьями
 def check_collision(ant_eaten):
     if ant_eaten:
+        return True
+    else:
+        for ant in ants:
+            if ant == (ant_eaten[0], ant_eaten[1]):
+                return False
+        return True
+
+# Перемещение муравьеда
+def move_anteater(direction):
+    global ant_eaten
+    ant_eaten = (ant_eaten[0] + direction[0], ant_eaten[1] + direction[1])
+    if check_collision(ant_eaten):
+        ant_eaten = None
+
+ant_eaten = None
+while True:
+    move_anteater([0, -1])
+    update_field()
+    print_field()
+```
+Здесь создается поле размером 5х5 клеток, на котором располагаются 20 муравьев. Муравьед может перемещаться по полю в четырех направлениях (вверх, вниз, влево, вправо) и съедать муравьев, когда он находится на одной клетке с ними.
+
+Этот код можно улучшить, добавив более сложные анимации и логику игры, но это уже зависит от ваших навыков и предпочтений.
