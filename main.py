@@ -31,7 +31,7 @@ class Field:
     def __init__(self) -> None:
         self.rows = ROWS
         self.cols = COLS
-        self.cells = ROWS*COLS
+        self.cells = []
 
     def draw(self) -> None:
         for _ in range(ROWS):
@@ -41,12 +41,16 @@ class Field:
             for x in range(self.cols):
                 cell = Cell(y+1,x+1)
                 table[y][x] = (cell.img)
+                self.cells.append(cell)
         for row in table:
             print(*row)
-
+    
+    def print_cell_coords(self):
+        for cell in self.cells:
+            print(f"x: {cell.x}, y: {cell.y}, img: {cell.img}")
     
 class Cell:
-    def __init__(self, y=int, x=int, img) -> None:
+    def __init__(self, y=int, x=int) -> None:
         self.img = '.'
         self.y = y
         self.x = x
@@ -55,3 +59,4 @@ class Cell:
 
 field = Field()
 field.draw()
+field.print_cell_coords()
