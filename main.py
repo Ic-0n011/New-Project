@@ -14,19 +14,6 @@ ROWS = 5
 COLS = 10
 table = []
 
-"""
-for _ in range(ROWS):
-    row = [0] * COLS
-    table.append(row)
-
-for y in range(ROWS):
-    for x in range(COLS):
-        table[y][x] = (y+1,x+1)
-
-for row in table:
-    print(*row)
-"""
-
 class Field:
     def __init__(self) -> None:
         self.rows = ROWS
