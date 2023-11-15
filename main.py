@@ -12,38 +12,56 @@
 
 ROWS = 5
 COLS = 10
-table = []
+
+
 
 class Field:
     def __init__(self) -> None:
         self.rows = ROWS
         self.cols = COLS
         self.cells = []
+        self.player = Player(0, 0)
 
-    def draw(self) -> None:
+    def creating_a_field(self) -> list:
         for _ in range(ROWS):
             row = [0] * self.cols
-            table.append(row)
+            self.cells.append(row)
         for y in range(self.rows):
             for x in range(self.cols):
-                cell = Cell(y+1,x+1)
-                table[y][x] = (cell.img)
-                self.cells.append(cell)
-        for row in table:
-            print(*row)
-    
-    def print_cell_coords(self):
-        for cell in self.cells:
-            print(f"x: {cell.x}, y: {cell.y}, img: {cell.img}")
-    
+                cell = Cell(y+1,x+1,content)
+                self.cells[y][x] = cell
+
+    def draw(self) -> None: 
+        for row in self.cells:
+            for col in row:
+                print(col.img, end=' ')
+            print()
+
+
 class Cell:
-    def __init__(self, y=int, x=int) -> None:
-        self.img = '.'
+    def __init__(self, y=int, x=int, content=str) -> None:
         self.y = y
         self.x = x
-    
+        self.img = None
+        self.content = content
+        if self.content == 'P':
+            self.img = 'P'
+        if self.content == 'A':
+            self.img = 'A'
+        if self.content == '+':
+            self.img = '+'
+        if self.content == None:
+            self.img = '.'
 
+        
+
+class Player():
+    def __init__(self, y, x) -> None:
+        self.y = y
+        self.x = x
+        self.img = 'P'
 
 field = Field()
+field.creating_a_field()
 field.draw()
-field.print_cell_coords()
+ 
