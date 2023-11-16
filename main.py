@@ -1,4 +1,3 @@
-import os
 """
 
 * <классы>
@@ -21,7 +20,7 @@ class Field:
         self.rows = ROWS
         self.cols = COLS
         self.cells = []
-        self.player = Player(0, 0)
+        self.player = Player(1, 1)
 
     def creating_a_field(self) -> list:
         for _ in range(ROWS):
@@ -29,29 +28,30 @@ class Field:
             self.cells.append(row)
         for y in range(self.rows):
             for x in range(self.cols):
-                img = None
-                if y == self.player.y and x == self.player.x:
-                    img = self.player.img
-                cell = Cell(y+1,x+1,img)
+                cell = Cell(y+1,x+1)
                 self.cells[y][x] = cell
 
     def draw(self) -> None: 
         for row in self.cells:
             for col in row:
-                print(col.img, end=' ')
+                col.update_content()
+                print(col.content, end=' ')
             print()
 
 
 class Cell:
-    def __init__(self, y=int, x=int, img=str) -> None:
+    def __init__(self, y=int, x=int) -> None:
         self.y = y
         self.x = x
-        self.img = img
         self.content = None
-        if self.img == None:
-            self.img = '.'
-
+        self.img = '.'
         
+    def update_content(self):
+        if (self.y == field.player.y) and (self.x == field.player.x):
+            self.content = field.player.img
+        else:
+            self.content = self.img
+
 
 class Player():
     def __init__(self, y, x) -> None:
