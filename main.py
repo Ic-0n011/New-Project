@@ -1,3 +1,4 @@
+import os
 """
 
 * <классы>
@@ -28,7 +29,10 @@ class Field:
             self.cells.append(row)
         for y in range(self.rows):
             for x in range(self.cols):
-                cell = Cell(y+1,x+1,content)
+                img = None
+                if y == self.player.y and x == self.player.x:
+                    img = self.player.img
+                cell = Cell(y+1,x+1,img)
                 self.cells[y][x] = cell
 
     def draw(self) -> None: 
@@ -39,18 +43,12 @@ class Field:
 
 
 class Cell:
-    def __init__(self, y=int, x=int, content=str) -> None:
+    def __init__(self, y=int, x=int, img=str) -> None:
         self.y = y
         self.x = x
-        self.img = None
-        self.content = content
-        if self.content == 'P':
-            self.img = 'P'
-        if self.content == 'A':
-            self.img = 'A'
-        if self.content == '+':
-            self.img = '+'
-        if self.content == None:
+        self.img = img
+        self.content = None
+        if self.img == None:
             self.img = '.'
 
         
@@ -61,7 +59,7 @@ class Player():
         self.x = x
         self.img = 'P'
 
+
 field = Field()
 field.creating_a_field()
 field.draw()
- 
