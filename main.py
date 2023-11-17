@@ -22,7 +22,7 @@ class Field:
         self.cells = []
         self.player = Player(1, 1)
 
-    def creating_a_field(self) -> list:
+    def creating_a_field(self) -> None:
         for _ in range(ROWS):
             row = [0] * self.cols
             self.cells.append(row)
@@ -34,7 +34,7 @@ class Field:
     def draw(self) -> None: 
         for row in self.cells:
             for col in row:
-                col.update_content()
+                col.cell_updater()
                 print(col.content, end=' ')
             print()
 
@@ -46,7 +46,7 @@ class Cell:
         self.content = None
         self.img = '.'
         
-    def update_content(self):
+    def cell_updater(self) -> None:
         if (self.y == field.player.y) and (self.x == field.player.x):
             self.content = field.player.img
         else:
