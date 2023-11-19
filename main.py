@@ -123,8 +123,7 @@ class Game():
                     if not (self.field.player.y == ROWS):
                         self.field.player.y += 1
                 if key.name == 'space':
-                    if not (self.field.player.y == ROWS):
-                        break
+                    break
 
 
 game = Game()
