@@ -1,7 +1,7 @@
 import keyboard
 import os
-"""
 
+"""
 * <классы>
 поле
 муравей
@@ -9,8 +9,8 @@ import os
 муравейник
 клетка игрового поля
 *
-
 """
+
 ROWS = 7
 COLS = 11
 
@@ -65,10 +65,23 @@ class Cell:
             self.content = self.img
 
 
+class Ant():
+    """
+    класс муравей
+    двигается рандомно
+    !!где спавнятся?!!
+    """
+    def __init__(self) -> None:
+        self.y = None
+        self.x = None
+        self.img = '+'
+
+
 class Anthill():
     """
     класс муравейник
     марионетка управляемая полем и игрой
+    !!как взаимодействует с Ant?!!
     """
     def __init__(self, y, x) -> None:
         self.y = y
