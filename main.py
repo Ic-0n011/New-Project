@@ -1,4 +1,5 @@
 import keyboard
+import random
 import os
 
 """
@@ -10,9 +11,21 @@ import os
 клетка игрового поля
 *
 """
-
 ROWS = 7
 COLS = 11
+ANTHILL_MIN = 1
+ANTHILL_MAX = 4
+
+
+class GameObject():
+    """
+    !!!запретить создание экземпляра!!!
+    пустой игровой обьект
+    """
+    def __init__(self, y, x, img) -> None:
+        self.y = y
+        self.x = x
+        self.img = img
 
 
 class Field:
@@ -24,8 +37,9 @@ class Field:
         self.rows = ROWS
         self.cols = COLS
         self.cells = []
-        self.anthill = Anthill(1, 1)
+        self.anthills = []
         self.player = Player((ROWS//2)+1, (COLS//2)+1)
+        self.ants = None
 
     def creating_a_field(self) -> None:
         """создание самого поля"""
@@ -36,6 +50,14 @@ class Field:
             for x in range(self.cols):
                 cell = Cell(y+1, x+1)
                 self.cells[y][x] = cell
+
+    def create_anthills(self):
+        quantity_anthills = random.randint(ANTHILL_MIN, ANTHILL_MAX)
+        for _ in range(quantity_anthills):
+            y = random.randint(1, ROWS)
+            x = random.randint(1, COLS)
+            print(y, ',', x)
+            self.anthills.append(Anthill(x, y))
 
     def draw(self) -> None:
         """прорисовка и обовление клеток"""
@@ -59,45 +81,46 @@ class Cell:
 
     def cell_updater(self) -> None:
         """обновление содержимого клетки"""
+        for anthill in game.field.anthills:
+            if anthill.x == self.x and anthill.y == self.y:
+                self.content = anthill.img
         if (self.y == game.field.player.y) and (self.x == game.field.player.x):
             self.content = game.field.player.img
         else:
             self.content = self.img
 
 
-class Ant():
+class Ant(GameObject):
     """
     класс муравей
     двигается рандомно
-    !!где спавнятся?!!
+    !!как спавнятся?!!
     """
-    def __init__(self) -> None:
-        self.y = None
-        self.x = None
+    def __init__(self, y, x) -> None:
         self.img = '+'
+        super().__init__(y, x, img=self.img)
 
 
-class Anthill():
+class Anthill(GameObject):
     """
     класс муравейник
     марионетка управляемая полем и игрой
+    спавнится от 1 до 4 шт рандомно по полю
     !!как взаимодействует с Ant?!!
     """
     def __init__(self, y, x) -> None:
-        self.y = y
-        self.x = x
         self.img = 'A'
+        super().__init__(y, x, img=self.img)
 
 
-class Player():
+class Player(GameObject):
     """
     класс игрок
     марионетка управляемая полем, игрой и игроком
     """
     def __init__(self, y, x) -> None:
-        self.y = y
-        self.x = x
         self.img = 'P'
+        super().__init__(y, x, img=self.img)
 
 
 class Game():
@@ -112,8 +135,11 @@ class Game():
     def start_game(self):
         """подготовка и начало игры"""
         self.field.creating_a_field()
+        self.field.create_anthills()
+        cury = self.field.player.y
+        curx = self.field.player.x
         while self.game_run:
-            os.system('cls')
+            #os.system('cls')
             print(
                 "для движения используйте стрелки: вверх, влево, впрво и вниз;",
                 "что бы остановить игру нажмите пробел.",
@@ -124,20 +150,21 @@ class Game():
             key = keyboard.read_event()
             if key.event_type == keyboard.KEY_DOWN:
                 if key.name == 'right':
-                    if not (self.field.player.x == COLS):
-                        self.field.player.x += 1
-                if key.name == 'left':
-                    if not (self.field.player.x == 1):
-                        self.field.player.x -= 1
-                if key.name == 'up':
-                    if not (self.field.player.y == 1):
-                        self.field.player.y -= 1
-                if key.name == 'down':
-                    if not (self.field.player.y == ROWS):
-                        self.field.player.y += 1
-                if key.name == 'space':
+                    if not (curx == COLS):
+                        curx += 1
+                elif key.name == 'left':
+                    if not (curx == 1):
+                        curx -= 1
+                elif key.name == 'up':
+                    if not (cury == 1):
+                        cury -= 1
+                elif key.name == 'down':
+                    if not (cury == ROWS):
+                        cury += 1
+                elif key.name == 'space':
                     break
-
+            self.field.player.y = cury
+            self.field.player.x = curx
 
 game = Game()
 game.start_game()
