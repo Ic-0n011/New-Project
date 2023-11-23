@@ -99,8 +99,6 @@ class Cell:
 class Ant(GameObject):
     """
     класс муравей
-    двигается рандомно
-    !!как спавнятся?!!
     """
     def __init__(self, y, x) -> None:
         self.img = '+'
@@ -110,9 +108,7 @@ class Ant(GameObject):
 class Anthill(GameObject):
     """
     класс муравейник
-    марионетка управляемая полем и игрой
     спавнится от 1 до 4 шт рандомно по полю
-    !!как взаимодействует с Ant?!!
     """
     def __init__(self, y, x) -> None:
         self.img = 'A'
