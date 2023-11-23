@@ -4,6 +4,7 @@ import os
 
 """
 * <классы>
+игра
 поле
 муравей
 муравьед
@@ -13,9 +14,7 @@ import os
 """
 ROWS = 7
 COLS = 11
-ANTHILL_MIN = 1
-ANTHILL_MAX = 4
-
+QUANTITY_ANTHILLS = random.randint(1, 4)
 
 class GameObject():
     """
@@ -42,7 +41,7 @@ class Field:
         self.ants = None
 
     def creating_a_field(self) -> None:
-        """создание самого поля"""
+        """создание поля"""
         for _ in range(ROWS):
             row = [0] * self.cols
             self.cells.append(row)
@@ -52,12 +51,17 @@ class Field:
                 self.cells[y][x] = cell
 
     def create_anthills(self):
-        quantity_anthills = random.randint(ANTHILL_MIN, ANTHILL_MAX)
-        for _ in range(quantity_anthills):
-            y = random.randint(1, ROWS)
-            x = random.randint(1, COLS)
-            print(y, ',', x)
-            self.anthills.append(Anthill(x, y))
+        """
+        функция создания муравейников
+        открытие цикла для создания рандомных не совпадающих с кординатами игрока
+        """
+        while True:
+            y = random.randint(1, COLS)
+            x = random.randint(1, ROWS)
+            if x != self.player.x and y != self.player.y:
+                self.anthills.append(Anthill(x, y))
+            if len(self.anthills) == QUANTITY_ANTHILLS:
+                break
 
     def draw(self) -> None:
         """прорисовка и обовление клеток"""
@@ -78,16 +82,18 @@ class Cell:
         self.x = x
         self.content = None
         self.img = '.'
-
-    def cell_updater(self) -> None:
-        """обновление содержимого клетки"""
-        for anthill in game.field.anthills:
-            if anthill.x == self.x and anthill.y == self.y:
-                self.content = anthill.img
-        if (self.y == game.field.player.y) and (self.x == game.field.player.x):
-            self.content = game.field.player.img
+    
+    def cell_updater(self):
+        self.content = None
+        if game.field.player.x == self.x and game.field.player.y == self.y:
+                self.content = game.field.player.img
         else:
-            self.content = self.img
+            for _ in range(QUANTITY_ANTHILLS):
+                for anthill in game.field.anthills:
+                    if anthill.x == self.x and anthill.y == self.y:
+                        self.content = anthill.img
+                        break
+                    self.content = self.img
 
 
 class Ant(GameObject):
@@ -139,7 +145,7 @@ class Game():
         cury = self.field.player.y
         curx = self.field.player.x
         while self.game_run:
-            #os.system('cls')
+            os.system('cls')
             print(
                 "для движения используйте стрелки: вверх, влево, впрво и вниз;",
                 "что бы остановить игру нажмите пробел.",
