@@ -19,7 +19,6 @@ QUANTITY_ANTHILLS = random.randint(1, 4)
 class GameObject():
     _abstract = True
     """
-    !!!запретить создание экземпляра!!!
     пустой игровой обьект
     """
     def __init__(self, y, x, img) -> None:
@@ -54,6 +53,7 @@ class Field:
                 self.cells[y][x] = cell
 
     def create_anthills(self):
+        randomizator3000 = True
         while randomizator3000:
             x = random.randint(1, self.cols) 
             y = random.randint(1, self.rows)
@@ -176,6 +176,7 @@ class Game():
                     break
             self.field.player.y = cury
             self.field.player.x = curx
+
 
 game = Game()
 game.start_game()
