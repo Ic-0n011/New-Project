@@ -17,11 +17,14 @@ COLS = 11
 QUANTITY_ANTHILLS = random.randint(1, 4)
 
 class GameObject():
+    _abstract = True
     """
     !!!запретить создание экземпляра!!!
     пустой игровой обьект
     """
     def __init__(self, y, x, img) -> None:
+        if self._abstract:
+            raise NotImplementedError("Cannot instantiate abstract base class")
         self.y = y
         self.x = x
         self.img = img
@@ -51,17 +54,19 @@ class Field:
                 self.cells[y][x] = cell
 
     def create_anthills(self):
-        """
-        функция создания муравейников
-        открытие цикла для создания рандомных не совпадающих с кординатами игрока
-        """
-        while True:
-            y = random.randint(1, COLS)
-            x = random.randint(1, ROWS)
-            if x != self.player.x and y != self.player.y:
-                self.anthills.append(Anthill(x, y))
-            if len(self.anthills) == QUANTITY_ANTHILLS:
-                break
+        while randomizator3000:
+            x = random.randint(1, self.cols) 
+            y = random.randint(1, self.rows)
+            for row in self.cells:
+                for cell in row:
+                    if cell.x == x and cell.y == y:
+                        cell.cell_updater()
+                        if cell.content == ".":
+                            anthill = Anthill(y, x)
+                            self.anthills.append(anthill)
+                            if len(self.anthills) >= QUANTITY_ANTHILLS:
+                                randomizator3000 = False
+                                break
 
     def draw(self) -> None:
         """прорисовка и обовление клеток"""
@@ -73,6 +78,7 @@ class Field:
 
 
 class Cell:
+    _abstract = False
     """
     класс клетка
     клеток в игре ROWS*COLS
@@ -92,11 +98,12 @@ class Cell:
                 for anthill in game.field.anthills:
                     if anthill.x == self.x and anthill.y == self.y:
                         self.content = anthill.img
-                        break
-                    self.content = self.img
+        if self.content == None:
+            self.content = self.img
 
 
 class Ant(GameObject):
+    _abstract = False
     """
     класс муравей
     """
@@ -106,6 +113,7 @@ class Ant(GameObject):
 
 
 class Anthill(GameObject):
+    _abstract = False
     """
     класс муравейник
     спавнится от 1 до 4 шт рандомно по полю
@@ -116,6 +124,7 @@ class Anthill(GameObject):
 
 
 class Player(GameObject):
+    _abstract = False
     """
     класс игрок
     марионетка управляемая полем, игрой и игроком
@@ -141,7 +150,7 @@ class Game():
         cury = self.field.player.y
         curx = self.field.player.x
         while self.game_run:
-            os.system('cls')
+            #os.system('cls')
             print(
                 "для движения используйте стрелки: вверх, влево, впрво и вниз;",
                 "что бы остановить игру нажмите пробел.",
