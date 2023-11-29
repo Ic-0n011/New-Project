@@ -1,5 +1,5 @@
 import keyboard
-import random
+from random import randint, choice
 import os
 
 """
@@ -14,7 +14,8 @@ import os
 """
 ROWS = 7
 COLS = 11
-QUANTITY_ANTHILLS = random.randint(1, 4)
+QUANTITY_ANTHILLS = randint(1, 4)
+
 
 class GameObject():
     _abstract = True
@@ -39,8 +40,8 @@ class Field:
         self.cols = COLS
         self.cells = []
         self.anthills = []
+        self.empty_cells = []
         self.player = Player((ROWS//2)+1, (COLS//2)+1)
-        self.ants = None
 
     def creating_a_field(self) -> None:
         """создание поля"""
@@ -52,24 +53,28 @@ class Field:
                 cell = Cell(y+1, x+1)
                 self.cells[y][x] = cell
 
+    def get_empty_cells(self) -> None:
+        self.empty_cells = []
+        for row in self.cells:
+            for cell in row:
+                cell.cell_updater()
+                if cell.content == ".":
+                    self.empty_cells.append(cell)
+
     def create_anthills(self):
-        randomizator3000 = True
-        while randomizator3000:
-            x = random.randint(1, self.cols) 
-            y = random.randint(1, self.rows)
-            for row in self.cells:
-                for cell in row:
-                    if cell.x == x and cell.y == y:
-                        cell.cell_updater()
-                        if cell.content == ".":
-                            anthill = Anthill(y, x)
-                            self.anthills.append(anthill)
-                            if len(self.anthills) >= QUANTITY_ANTHILLS:
-                                randomizator3000 = False
-                                break
+        for _ in range(QUANTITY_ANTHILLS):
+            self.get_empty_cells()
+            if len(self.empty_cells):
+                empty_cell = choice(self.empty_cells)
+                anthill = Anthill(empty_cell.y, empty_cell.x)
+                self.anthills.append(anthill)
+            else:
+                break
 
     def draw(self) -> None:
         """прорисовка и обовление клеток"""
+        for anthill in self.anthills:
+            anthill.spawn_ants()
         for row in self.cells:
             for col in row:
                 col.cell_updater()
@@ -88,17 +93,19 @@ class Cell:
         self.x = x
         self.content = None
         self.img = '.'
-    
+
     def cell_updater(self):
         self.content = None
         if game.field.player.x == self.x and game.field.player.y == self.y:
-                self.content = game.field.player.img
-        else:
-            for _ in range(QUANTITY_ANTHILLS):
-                for anthill in game.field.anthills:
-                    if anthill.x == self.x and anthill.y == self.y:
-                        self.content = anthill.img
-        if self.content == None:
+            self.content = game.field.player.img
+        for _ in range(QUANTITY_ANTHILLS):
+            for anthill in game.field.anthills:
+                if anthill.x == self.x and anthill.y == self.y:
+                    self.content = anthill.img
+                for ant in anthill.ants:
+                    if ant.y == self.y and ant.x == self.x:
+                        self.content = ant.img
+        if not self.content:
             self.content = self.img
 
 
@@ -120,7 +127,24 @@ class Anthill(GameObject):
     """
     def __init__(self, y, x) -> None:
         self.img = 'A'
+        self.quantiti_ants = randint(1, 10)
+        self.ants = []
         super().__init__(y, x, img=self.img)
+
+    def spawn_ants(self):
+        y = self.y
+        x = self.x
+        allowed_x = [self.x, self.x-1, self.x+1]
+        allowed_y = [self.y, self.y-1, self.y+1]
+        for _ in range(self.quantiti_ants):
+            for row in game.field.cells:
+                for cell in row:
+                    if cell.x in allowed_x:
+                        if cell.y in allowed_y:
+                            if not cell.y == y and  cell.x == y:
+                                if cell.content == ".":
+                                    ant = Ant(cell.y, cell.x)
+                                    self.ants.append(ant)
 
 
 class Player(GameObject):
@@ -152,9 +176,9 @@ class Game():
         while self.game_run:
             #os.system('cls')
             print(
-                "для движения используйте стрелки: вверх, влево, впрво и вниз;",
-                "что бы остановить игру нажмите пробел.",
-                sep="\n"
+                "для движения используйте стрелки:"
+                " вверх, влево, впрво и вниз; "
+                "что бы остановить игру нажмите пробел."
                 )
             print("")
             self.field.draw()
