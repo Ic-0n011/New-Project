@@ -1,7 +1,7 @@
 import keyboard
 from random import randint, choice
 import os
-
+import time
 """
 * <классы>
 игра
@@ -30,7 +30,7 @@ class GameObject():
         self.img = img
 
 
-class Field:
+class Field():
     """
     класс поле
     через поле делается многие вещи
@@ -38,9 +38,8 @@ class Field:
     def __init__(self) -> None:
         self.rows = ROWS
         self.cols = COLS
-        self.cells = []
         self.anthills = []
-        self.empty_cells = []
+        self.cells = []
         self.player = Player((ROWS//2)+1, (COLS//2)+1)
 
     def creating_a_field(self) -> None:
@@ -54,6 +53,7 @@ class Field:
                 self.cells[y][x] = cell
 
     def get_empty_cells(self) -> None:
+        """создание листа с пустыми клетками"""
         self.empty_cells = []
         for row in self.cells:
             for cell in row:
@@ -62,6 +62,7 @@ class Field:
                     self.empty_cells.append(cell)
 
     def create_anthills(self):
+        """создание муравейников"""
         for _ in range(QUANTITY_ANTHILLS):
             self.get_empty_cells()
             if len(self.empty_cells):
@@ -71,18 +72,8 @@ class Field:
             else:
                 break
 
-    def draw(self) -> None:
-        """прорисовка и обовление клеток"""
-        for anthill in self.anthills:
-            anthill.spawn_ants()
-        for row in self.cells:
-            for col in row:
-                col.cell_updater()
-                print(col.content, end=' ')
-            print()
 
-
-class Cell:
+class Cell():
     _abstract = False
     """
     класс клетка
@@ -95,6 +86,7 @@ class Cell:
         self.img = '.'
 
     def cell_updater(self):
+        """обновление внутреклеточного контента и картинки"""
         self.content = None
         if game.field.player.x == self.x and game.field.player.y == self.y:
             self.content = game.field.player.img
@@ -131,20 +123,31 @@ class Anthill(GameObject):
         self.ants = []
         super().__init__(y, x, img=self.img)
 
-    def spawn_ants(self):
-        y = self.y
-        x = self.x
-        allowed_x = [self.x, self.x-1, self.x+1]
-        allowed_y = [self.y, self.y-1, self.y+1]
-        for _ in range(self.quantiti_ants):
+    def find_free_nearby_cells(self):
+            self.closest_free_cells = []
+            """поиск рядом находящихся пустых клеток"""
+            self.allowed_x = [self.x, self.x-1, self.x+1]
+            self.allowed_y = [self.y, self.y-1, self.y+1]
             for row in game.field.cells:
                 for cell in row:
-                    if cell.x in allowed_x:
-                        if cell.y in allowed_y:
-                            if not cell.y == y and  cell.x == y:
-                                if cell.content == ".":
-                                    ant = Ant(cell.y, cell.x)
-                                    self.ants.append(ant)
+                    if (cell.x in self.allowed_x) and (cell.y in self.allowed_y):
+                        if not (self.x == cell.x and self.y == cell.y):
+                            cell.cell_updater()
+                            if cell.content == '.':
+                                self.closest_free_cells.append(cell)
+
+    def spawn_ants(self):
+        """спавн муравьев в рядом находящиеся пустые клетки"""
+        if self.quantiti_ants > 0:
+            self.find_free_nearby_cells()
+            if self.closest_free_cells:
+                suitable_cell = None
+                suitable_cell = choice(self.closest_free_cells)
+                ant = Ant(suitable_cell.y, suitable_cell.x)
+                self.ants.append(ant)
+                self.quantiti_ants -= 1
+        else:
+            pass
 
 
 class Player(GameObject):
@@ -167,21 +170,32 @@ class Game():
         self.field = Field()
         self.game_run = True
 
+    def showing_everything(self):
+        """два в одном: показ правил и прорисовка поля"""
+        print(
+                "\nЧтобы двигаться вы можете использовать стрелки на клавиатуре:"
+                "\nвверх, влево, впрво и вниз "
+                "\nЕсли надоест играть вы можете остановить игру нажав пробел."
+                "\n "
+                )
+        for anthill in self.field.anthills:
+            anthill.spawn_ants()
+        for row in self.field.cells:
+            for col in row:
+                col.cell_updater()
+                print(col.content, end=' ')
+            print()
+        self.field.get_empty_cells()
+
     def start_game(self):
         """подготовка и начало игры"""
         self.field.creating_a_field()
         self.field.create_anthills()
         cury = self.field.player.y
         curx = self.field.player.x
+        self.showing_everything()
         while self.game_run:
-            #os.system('cls')
-            print(
-                "для движения используйте стрелки:"
-                " вверх, влево, впрво и вниз; "
-                "что бы остановить игру нажмите пробел."
-                )
-            print("")
-            self.field.draw()
+            """здесь начинается игровой цикл игры"""
             key = keyboard.read_event()
             if key.event_type == keyboard.KEY_DOWN:
                 if key.name == 'right':
@@ -200,7 +214,9 @@ class Game():
                     break
             self.field.player.y = cury
             self.field.player.x = curx
-
+            os.system('cls')
+            self.showing_everything()
+            time.sleep(0.16)
 
 game = Game()
 game.start_game()
