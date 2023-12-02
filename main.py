@@ -2,6 +2,7 @@ import keyboard
 from random import randint, choice
 import os
 import time
+from sys import exit
 """
 * <классы>
 игра
@@ -15,6 +16,12 @@ import time
 ROWS = 7
 COLS = 11
 QUANTITY_ANTHILLS = randint(1, 4)
+QUANTITY_ANTS = randint(1, 10)
+IMG_PLAYER = "P"
+IMG_ANT = "+"
+IMG_ANTHILL = "A"
+IMG_CELL = "."
+BUTTONS = ['space', 'right', 'left', 'up', 'down']
 
 
 class GameObject():
@@ -46,6 +53,7 @@ class Field():
         self.anthills = []
         self.cells = []
         self.ants = []
+        self.quantity_ants = 0
         self.player = Player((ROWS//2)+1, (COLS//2)+1)
 
     def creating_a_field(self) -> None:
@@ -69,14 +77,31 @@ class Field():
 
     def create_anthills(self) -> None:
         """создание муравейников"""
+        quantity_ants = 0
         for _ in range(QUANTITY_ANTHILLS):
             self.get_empty_cells()
-            if len(self.empty_cells):
+            if self.empty_cells:
                 empty_cell = choice(self.empty_cells)
                 anthill = Anthill(empty_cell.y, empty_cell.x)
                 self.anthills.append(anthill)
+                quantity_ants += anthill.ants_inside
             else:
-                break
+                pass
+        return quantity_ants
+
+    def find_free_nearby_cells(self, x, y) -> list:
+        temporary_list = []
+        """поиск рядом находящихся пустых клеток"""
+        allowed_x = [x, x-1, x+1]
+        allowed_y = [y, y-1, y+1]
+        for row in self.cells:
+            for cell in row:
+                if (cell.x in allowed_x) and (cell.y in allowed_y):
+                    if not (x == cell.x and y == cell.y):
+                        cell.cell_updater()
+                        if cell.content == '.':
+                            temporary_list.append(cell)
+        return temporary_list
 
 
 class Cell():
@@ -90,7 +115,7 @@ class Cell():
         self.y = y
         self.x = x
         self.content = None
-        self.img = '.'
+        self.img = IMG_CELL
 
     def cell_updater(self) -> None:
         """обновление внутреклеточного контента и картинки"""
@@ -108,7 +133,6 @@ class Cell():
                             game.score_points += 1
                         else:
                             self.content = ant.img
-
         if not self.content:
             self.content = self.img
 
@@ -117,11 +141,18 @@ class Ant(GameObject):
     _abstract = False
     """
     класс муравей
-    TODO:заставить муравья двигаться(как двигается муравей рандомно или с целью?)
+    TODO:заставить муравья двигаться
     """
     def __init__(self, y, x) -> None:
-        self.img = '+'
+        self.img = IMG_ANT
         super().__init__(y, x, img=self.img)
+
+    def moving(self):
+        """двигается только в пустые клетку"""
+        self.closest_free_cells = game.field.find_free_nearby_cells(
+            self.x,
+            self.y
+                                                                    )
 
 
 class Anthill(GameObject):
@@ -133,28 +164,17 @@ class Anthill(GameObject):
     спавнит одного муравья за ход если они остались в нутри
     """
     def __init__(self, y, x) -> None:
-        self.img = 'A'
+        self.img = IMG_ANTHILL
         self.ants_inside = randint(1, 10)
         super().__init__(y, x, img=self.img)
-
-    def find_free_nearby_cells(self) -> list:
-            temporary_list = []
-            """поиск рядом находящихся пустых клеток"""
-            self.allowed_x = [self.x, self.x-1, self.x+1]
-            self.allowed_y = [self.y, self.y-1, self.y+1]
-            for row in game.field.cells:
-                for cell in row:
-                    if (cell.x in self.allowed_x) and (cell.y in self.allowed_y):
-                        if not (self.x == cell.x and self.y == cell.y):
-                            cell.cell_updater()
-                            if cell.content == '.':
-                                temporary_list.append(cell)
-            return temporary_list
 
     def spawn_ants(self) -> None:
         """спавн муравьев в рядом находящиеся пустые клетки"""
         if self.ants_inside > 0:
-            self.closest_free_cells = self.find_free_nearby_cells()
+            self.closest_free_cells = game.field.find_free_nearby_cells(
+                self.x,
+                self.y
+                                                                        )
             if self.closest_free_cells:
                 suitable_cell = None
                 suitable_cell = choice(self.closest_free_cells)
@@ -172,7 +192,7 @@ class Player(GameObject):
     сам класс нечего не делает
     """
     def __init__(self, y, x) -> None:
-        self.img = 'P'
+        self.img = IMG_PLAYER
         super().__init__(y, x, img=self.img)
 
 
@@ -186,18 +206,11 @@ class Game():
         self.game_run = True
         self.score_points = 0
 
-    def multi_function(self, master_key, key) -> None|str:
+    def multi_function(self, master_key, key) -> None | str:
         """мульти функция, выполняет несколько типов задач"""
         if master_key == "show":
             """два в одном: показ текстовой части и прорисовка поля"""
-            print(
-                    "\nЧтобы двигаться вы можете использовать стрелки на клавиатуре:"
-                    "\nвверх, влево, впрво и вниз "
-                    "\nЕсли надоест играть вы можете остановить игру нажав пробел."
-                    "\n "
-                    f"\n набранно очков:{self.score_points} "
-                    "\n "
-                    )
+            os.system('cls')
             for anthill in self.field.anthills:
                 anthill.spawn_ants()
             for row in self.field.cells:
@@ -206,41 +219,50 @@ class Game():
                     print(col.content, end=' ')
                 print()
             self.field.get_empty_cells()
+            print(
+                "\n Чтобы двигаться вы можете использовать стрелки:"
+                "\n вверх, влево, впрво и вниз "
+                "\n Если надоест играть вы можете остановить игру нажав пробел"
+                "\n "
+                "\n набранно очков:"
+                f"{self.score_points}/{self.field.quantity_ants}"
+                "\n "
+                )
             return
         elif master_key == "movement":
-                xytl = []
-                for anthill in self.field.anthills:
-                    tx = str(anthill.x)
-                    ty = str(anthill.y)
-                    xytl.append(tx+ty)
-                cury = self.field.player.y
-                curx = self.field.player.x
-                if key.name == 'right':
-                    if curx != COLS:
-                        if not (str(curx + 1)+str(cury) in xytl):
-                            curx += 1
-                elif key.name == 'left':
-                    if curx != 1:
-                        if not (str(curx - 1)+str(cury) in xytl):
-                            curx -= 1
-                elif key.name == 'up':
-                    if cury != 1:
-                        if not (str(curx)+str(cury - 1) in xytl):
-                            cury -= 1
-                elif key.name == 'down':
-                    if cury != ROWS:
-                        if not (str(curx)+str(cury + 1) in xytl):
-                            cury += 1
-                elif key.name == 'space':
-                    return "stop"
-                self.field.player.y = cury
-                self.field.player.x = curx
-                return None
+            xytl = []
+            for anthill in self.field.anthills:
+                tx = str(anthill.x)
+                ty = str(anthill.y)
+                xytl.append(tx+ty)
+            cury = self.field.player.y
+            curx = self.field.player.x
+            if key.name == BUTTONS[1]:
+                if curx != COLS:
+                    if not (str(curx + 1)+str(cury) in xytl):
+                        curx += 1
+            elif key.name == BUTTONS[2]:
+                if curx != 1:
+                    if not (str(curx - 1)+str(cury) in xytl):
+                        curx -= 1
+            elif key.name == BUTTONS[3]:
+                if cury != 1:
+                    if not (str(curx)+str(cury - 1) in xytl):
+                        cury -= 1
+            elif key.name == BUTTONS[4]:
+                if cury != ROWS:
+                    if not (str(curx)+str(cury + 1) in xytl):
+                        cury += 1
+            elif key.name == BUTTONS[0]:
+                return "stop"
+            self.field.player.y = cury
+            self.field.player.x = curx
+            return None
 
     def start_game(self):
         """подготовка и начало игры"""
         self.field.creating_a_field()
-        self.field.create_anthills()
+        self.field.quantity_ants = self.field.create_anthills()
         self.multi_function("show", None)
         while self.game_run:
             """здесь начинается игровой цикл игры"""
@@ -251,9 +273,9 @@ class Game():
                 if temporary_variable == "stop":
                     self.game_run = False
                     break
-            os.system('cls')
             self.multi_function("show", None)
-            time.sleep(0.16)
+            time.sleep(0.07)
+
 
 game = Game()
 game.start_game()
