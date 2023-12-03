@@ -16,7 +16,6 @@ from sys import exit
 ROWS = 7
 COLS = 11
 QUANTITY_ANTHILLS = randint(1, 4)
-QUANTITY_ANTS = randint(1, 10)
 IMG_PLAYER = "P"
 IMG_ANT = "+"
 IMG_ANTHILL = "A"
@@ -75,7 +74,7 @@ class Field():
                 if cell.content == ".":
                     self.empty_cells.append(cell)
 
-    def create_anthills(self) -> None:
+    def create_anthills(self) -> int:
         """создание муравейников"""
         quantity_ants = 0
         for _ in range(QUANTITY_ANTHILLS):
@@ -99,7 +98,7 @@ class Field():
                 if (cell.x in allowed_x) and (cell.y in allowed_y):
                     if not (x == cell.x and y == cell.y):
                         cell.cell_updater()
-                        if cell.content == '.':
+                        if cell.content == IMG_CELL:
                             temporary_list.append(cell)
         return temporary_list
 
@@ -141,18 +140,29 @@ class Ant(GameObject):
     _abstract = False
     """
     класс муравей
-    TODO:заставить муравья двигаться
     """
     def __init__(self, y, x) -> None:
         self.img = IMG_ANT
         super().__init__(y, x, img=self.img)
 
-    def moving(self):
+    def moving(self) -> bool:
         """двигается только в пустые клетку"""
-        self.closest_free_cells = game.field.find_free_nearby_cells(
-            self.x,
-            self.y
-                                                                    )
+        closest_free_cells = game.field.find_free_nearby_cells(
+            self.x, self.y)
+        if closest_free_cells:
+            temporary_list = []
+            for cell in closest_free_cells:
+                if (cell.x == self.x) or (cell.y == self.y):
+                    if not ((cell.x == self.x) and (cell.y == self.y)):
+                        temporary_list.append(cell)
+        if temporary_list:
+            if self.x==(1 or COLS) or self.y==(1 or ROWS) and randint(1,3)!=1:
+                return True
+            else:
+                tcell = choice(temporary_list)
+                self.x = tcell.x
+                self.y = tcell.y
+                return False
 
 
 class Anthill(GameObject):
@@ -171,25 +181,20 @@ class Anthill(GameObject):
     def spawn_ants(self) -> None:
         """спавн муравьев в рядом находящиеся пустые клетки"""
         if self.ants_inside > 0:
-            self.closest_free_cells = game.field.find_free_nearby_cells(
-                self.x,
-                self.y
-                                                                        )
-            if self.closest_free_cells:
+            closest_free_cells = game.field.find_free_nearby_cells(
+                self.x, self.y)
+            if closest_free_cells:
                 suitable_cell = None
-                suitable_cell = choice(self.closest_free_cells)
+                suitable_cell = choice(closest_free_cells)
                 ant = Ant(suitable_cell.y, suitable_cell.x)
                 game.field.ants.append(ant)
                 self.ants_inside -= 1
-        else:
-            pass
 
 
 class Player(GameObject):
     _abstract = False
     """
     класс игрок
-    сам класс нечего не делает
     """
     def __init__(self, y, x) -> None:
         self.img = IMG_PLAYER
@@ -211,6 +216,11 @@ class Game():
         if master_key == "show":
             """два в одном: показ текстовой части и прорисовка поля"""
             os.system('cls')
+            if self.field.ants:
+                for ant in self.field.ants:
+                    t = ant.moving()
+                    if t:
+                        self.field.ants.remove(ant)
             for anthill in self.field.anthills:
                 anthill.spawn_ants()
             for row in self.field.cells:
@@ -227,8 +237,7 @@ class Game():
                 "\n набранно очков:"
                 f"{self.score_points}/{self.field.quantity_ants}"
                 "\n "
-                )
-            return
+                )  
         elif master_key == "movement":
             xytl = []
             for anthill in self.field.anthills:
@@ -258,15 +267,48 @@ class Game():
             self.field.player.y = cury
             self.field.player.x = curx
             return None
+        elif master_key == "End":
+            os.system('cls')
+            print(
+                "\n Игра законченна!"
+                "\n вы съели "
+                f"{self.score_points}/{self.field.quantity_ants}"
+                " муравьев"
+                "\n "
+                )
 
-    def start_game(self):
+    def full_verification(self) -> None:
+        error_text = []
+        if len(self.field.cells) <= 2:
+            error_text.append("Ошибка поля")
+        if len(self.field.anthills) <= 0:
+            error_text.append("На поле нету муравейников")
+        if not self.field.player:
+            error_text.append("В игре отсутствует игрок")
+        if not (IMG_ANT or IMG_ANTHILL or IMG_CELL or IMG_ANTHILL):
+            error_text.append("Один или несколько параметров IMG_ не указан")
+        if len(BUTTONS) <= 4:
+            error_text.append("Не указанны кнопки взаимодействия")
+        if error_text:
+            print("НАЙДЕНЫ ОШИБКИ!!!")
+            print("----")
+            print(", ".join(error_text) if len(error_text) > 1 else error_text[0])
+            print("----")
+            exit()
+
+    def start_game(self) -> None:
         """подготовка и начало игры"""
         self.field.creating_a_field()
         self.field.quantity_ants = self.field.create_anthills()
+        self.full_verification()
         self.multi_function("show", None)
         while self.game_run:
             """здесь начинается игровой цикл игры"""
             key = keyboard.read_event()
+            if len(self.field.ants) <= 0:
+                self.multi_function("End", None)
+                self.game_run = False
+                break
             if key.event_type == keyboard.KEY_DOWN:
                 temporary_variable = None
                 temporary_variable = self.multi_function("movement", key)
@@ -274,8 +316,9 @@ class Game():
                     self.game_run = False
                     break
             self.multi_function("show", None)
-            time.sleep(0.07)
+            time.sleep(0.5)
 
 
 game = Game()
 game.start_game()
+exit()
