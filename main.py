@@ -98,7 +98,6 @@ class Field():
 
 
 class Cell():
-    
     """
     класс клетка
     клеток в игре ROWS*COLS
@@ -140,26 +139,31 @@ class Ant(GameObject):
 
     def moving(self) -> None:
         """двигается только в пустые клетку"""
-        #FIXME: упростить
-        closest_free_cells = game.field.find_free_nearby_cells(
-            self.x, self.y)
-        if closest_free_cells:
-            temporary_list = []
-            for cell in closest_free_cells:
-                if (cell.x == self.x) or (cell.y == self.y):
-                    if not ((cell.x == self.x) and (cell.y == self.y)):
-                        temporary_list.append(cell)
-        if temporary_list:
-            if self.x==(1 or COLS) or self.y==(1 or ROWS) and randint(1,3)!=1:
+        next_x = self.x
+        next_y = self.y
+        allowed_x = [self.x-1, self.x+1]
+        allowed_y = [self.y-1, self.y+1]
+        if randint(0, 1) == 1:
+            next_x = choice(allowed_x)
+            if (next_x > COLS) or (next_x < 1):
                 game.field.ants.remove(self)
-            else:
-                tcell = choice(temporary_list)
-                self.x = tcell.x
-                self.y = tcell.y
+                return
+        else:
+            next_y = choice(allowed_y)
+            if (next_y > ROWS) or (next_y < 1):
+                game.field.ants.remove(self)
+                return
+        game.field.get_empty_cells()
+        for cell in game.field.empty_cells:
+            if cell.x == next_x:
+                if cell.y == next_y:
+                    self.x = next_x
+                    self.y = next_y
+                    break
+        return
 
 
 class Anthill(GameObject):
-    
     """
     класс муравейник
     спавнится от 1 до 4 шт рандомно по полю
@@ -203,70 +207,70 @@ class Game():
         self.score_points = 0
 
     def show_the_screen(self) -> None:
-            """два в одном: показ текстовой части и прорисовка поля"""
-            os.system('cls')
-            print(
-                 "\n Чтобы двигаться вы можете использовать стрелки:"
-                "\n вверх, влево, впрво и вниз "
-                "\n Если надоест играть вы можете остановить игру нажав пробел"
-                "\n "
-                )
-            if self.field.ants:
-                for ant in self.field.ants:
-                    ant.moving()
-            for anthill in self.field.anthills:
-                anthill.spawn_ants()
-            for row in self.field.cells:
-                for col in row:
-                    col.cell_updater()
-                    print(col.content, end=' ')
-                print()
-            self.field.get_empty_cells()
-            print(
-                "\n набранно очков:"
-                f"{self.score_points}/{self.field.quantity_ants}"
-                "\n "
-                )  
+        """два в одном: показ текстовой части и прорисовка поля"""
+        os.system('cls')
+        print(
+            "\n Чтобы двигаться вы можете использовать стрелки:",
+            "\n вверх, влево, впрво и вниз ",
+            "\n Если надоест играть вы можете остановить игру нажав пробел",
+            "\n "
+            )
+        if self.field.ants:
+            for ant in self.field.ants:
+                ant.moving()
+        for anthill in self.field.anthills:
+            anthill.spawn_ants()
+        for row in self.field.cells:
+            for col in row:
+                col.cell_updater()
+                print(col.content, end=' ')
+            print()
+        self.field.get_empty_cells()
+        print(
+            "\n набранно очков:"
+            f"{self.score_points}/{self.field.quantity_ants}"
+            "\n "
+            )
 
     def moving_the_player(self, key) -> None:
-            """движение игрока при помощи кнопок"""
-            temporary_list = []
-            for anthill in self.field.anthills:
-                tx = str(anthill.x)
-                ty = str(anthill.y)
-                temporary_list.append(tx+ty)
-            cury = self.field.player.y
-            curx = self.field.player.x
-            if key.name == BUTTONS[1]:
-                if curx != COLS:
-                    if not (str(curx+1)+str(cury) in temporary_list):
-                        curx += 1
-            elif key.name == BUTTONS[2]:
-                if curx != 1:
-                    if not (str(curx-1)+str(cury) in temporary_list):
-                        curx -= 1
-            elif key.name == BUTTONS[3]:
-                if cury != 1:
-                    if not (str(curx)+str(cury-1) in temporary_list):
-                        cury -= 1
-            elif key.name == BUTTONS[4]:
-                if cury != ROWS:
-                    if not (str(curx)+str(cury+1) in temporary_list):
-                        cury += 1
-            elif key.name == BUTTONS[0]:
-                self.game_run = False
-            self.field.player.y = cury
-            self.field.player.x = curx
+        """движение игрока при помощи кнопок"""
+        temporary_list = []
+        for anthill in self.field.anthills:
+            tx = str(anthill.x)
+            ty = str(anthill.y)
+            temporary_list.append(tx+ty)
+        cury = self.field.player.y
+        curx = self.field.player.x
+        if key.name == BUTTONS[1]:
+            if curx != COLS:
+                if not (str(curx+1)+str(cury) in temporary_list):
+                    curx += 1
+        elif key.name == BUTTONS[2]:
+            if curx != 1:
+                if not (str(curx-1)+str(cury) in temporary_list):
+                    curx -= 1
+        elif key.name == BUTTONS[3]:
+            if cury != 1:
+                if not (str(curx)+str(cury-1) in temporary_list):
+                    cury -= 1
+        elif key.name == BUTTONS[4]:
+            if cury != ROWS:
+                if not (str(curx)+str(cury+1) in temporary_list):
+                    cury += 1
+        elif key.name == BUTTONS[0]:
+            self.game_run = False
+        self.field.player.y = cury
+        self.field.player.x = curx
 
     def end_the_game(self) -> None:
-            """конец игрового цикла"""
-            os.system('cls')
-            print(
-                "\n Игра законченна!"
-                F"\n вы съели:{self.score_points} - муравьев"
-                f"\nмуравьев упущенно:{self.field.quantity_ants - self.score_points}"
-                )
-            self.game_run = False
+        """конец игрового цикла"""
+        os.system('cls')
+        print(
+            "\n Игра законченна!"
+            F"\n вы съели:{self.score_points} - муравьев"
+            f"\nмуравьев упущенно:{self.field.quantity_ants-self.score_points}"
+            )
+        self.game_run = False
 
     def full_verification(self) -> None:
         """
@@ -288,7 +292,9 @@ class Game():
         if error_text:
             print("НАЙДЕНЫ ОШИБКИ!!!")
             print("----")
-            print(", ".join(error_text) if len(error_text) > 1 else error_text[0])
+            print(
+                ", ".join(error_text) if len(error_text) > 1 else error_text[0]
+                )
             print("----")
             exit()
 
@@ -307,13 +313,12 @@ class Game():
             if key.event_type == keyboard.KEY_DOWN:
                 self.moving_the_player(key)
             self.show_the_screen()
-            time.sleep(0.1)
+            time.sleep(0.001)
+
 
 """
 FIXME:
-    У игрока проблемы с движением, он пропускает ходы.
-TODO:
-    В целом код плохо читается, в нем нет консистентности.
+    312-314 строки - добавить ожидание момента отжатия клавиши или ее имитация 
 """
 game = Game()
 game.start_game()
