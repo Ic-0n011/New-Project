@@ -1,199 +1,15 @@
 import keyboard
-from random import randint, choice, sample
 import os
 import time
 from sys import exit
-from abc import ABC, abstractmethod
+from variables import *
+from field import Field
 """
-* <классы>
 игра
-поле
-муравей
-муравьед
-муравейник
-клетка игрового поля
-*
+field: поле, клетка игрового поля
+game objects: муравей, муравьед, муравейник
+все глобальные переменные находятся в variables.py
 """
-ROWS = 7
-COLS = 11
-QUANTITY_ANTHILLS = randint(1, 4)
-IMG_PLAYER = "P"
-IMG_ANT = "+"
-IMG_ANTHILL = "A"
-IMG_CELL = "."
-BUTTONS = ['space', 'right', 'left', 'up', 'down']
-
-
-class GameObject(ABC):
-    """
-    пустой игровой обьект
-    """
-    @abstractmethod
-    def __init__(self, y, x, img) -> None:
-        self.y = y
-        self.x = x
-        self.img = img
-
-
-class Field():
-    """
-    класс поле
-    поле создает и(или) хранит:
-        список клеток
-        список с пустыми клетками
-        муравейники
-        муравьев
-        игрока(муравьеда)
-    """
-    def __init__(self) -> None:
-        self.rows = ROWS
-        self.cols = COLS
-        self.anthills = []
-        self.cells = []
-        self.ants = []
-        self.quantity_ants = 0
-        self.player = Player((ROWS//2)+1, (COLS//2)+1)
-
-    def creating_a_field(self) -> None:
-        """создание поля"""
-        for _ in range(ROWS):
-            row = [0] * self.cols
-            self.cells.append(row)
-        for y in range(self.rows):
-            for x in range(self.cols):
-                cell = Cell(y+1, x+1)
-                self.cells[y][x] = cell
-
-    def get_empty_cells(self) -> None:
-        """создание листа с пустыми клетками"""
-        self.empty_cells = []
-        for row in self.cells:
-            for cell in row:
-                cell.cell_updater()
-                if cell.content == cell.img:
-                    self.empty_cells.append(cell)
-
-    def create_anthills(self) -> None:
-        """создание муравейников"""
-        self.get_empty_cells()
-        random_empty_cell = sample(self.empty_cells, QUANTITY_ANTHILLS)
-        for cell in random_empty_cell:
-            anthill = Anthill(cell.y, cell.x)
-            self.anthills.append(anthill)
-            self.quantity_ants += anthill.ants_inside
-
-    def find_free_nearby_cells(self, x, y) -> list:
-        """поиск рядом находящихся пустых клеток"""
-        temporary_list = []
-        allowed_x = [x, x-1, x+1]
-        allowed_y = [y, y-1, y+1]
-        for row in self.cells:
-            for cell in row:
-                if (cell.x in allowed_x) and (cell.y in allowed_y):
-                    if not (x == cell.x and y == cell.y):
-                        cell.cell_updater()
-                        if cell.content == IMG_CELL:
-                            temporary_list.append(cell)
-        return temporary_list
-
-
-class Cell():
-    """
-    класс клетка
-    клеток в игре ROWS*COLS
-    клетка может обновиться, знает что в ней лежит
-    """
-    def __init__(self, y=int, x=int) -> None:
-        self.y = y
-        self.x = x
-        self.content = None
-        self.img = IMG_CELL
-
-    def cell_updater(self) -> None:
-        """обновление внутреклеточного контента и картинки"""
-        self.content = None
-        if game.field.player.x == self.x and game.field.player.y == self.y:
-            self.content = game.field.player.img
-        for _ in range(QUANTITY_ANTHILLS):
-            for anthill in game.field.anthills:
-                if anthill.x == self.x and anthill.y == self.y:
-                    self.content = anthill.img
-                for ant in game.field.ants:
-                    if ant.y == self.y and ant.x == self.x:
-                        if self.content == game.field.player.img:
-                            game.field.ants.remove(ant)
-                            game.score_points += 1
-                        else:
-                            self.content = ant.img
-        if not self.content:
-            self.content = self.img
-
-
-class Ant(GameObject):
-    """
-    класс муравей
-    """
-    def __init__(self, y, x) -> None:
-        self.img = IMG_ANT
-        super().__init__(y, x, img=self.img)
-
-    def moving(self) -> None:
-        """двигается только в пустые клетку"""
-        next_x = self.x
-        next_y = self.y
-        allowed_x = [self.x-1, self.x+1]
-        allowed_y = [self.y-1, self.y+1]
-        if randint(0, 1) == 1:
-            next_x = choice(allowed_x)
-            if (next_x > COLS) or (next_x < 1):
-                game.field.ants.remove(self)
-                return
-        else:
-            next_y = choice(allowed_y)
-            if (next_y > ROWS) or (next_y < 1):
-                game.field.ants.remove(self)
-                return
-        game.field.get_empty_cells()
-        for cell in game.field.empty_cells:
-            if cell.x == next_x:
-                if cell.y == next_y:
-                    self.x = next_x
-                    self.y = next_y
-                    break
-        return
-
-
-class Anthill(GameObject):
-    """
-    класс муравейник
-    спавнится от 1 до 4 шт рандомно по полю
-    муравейник знает сколько в нем муравьев
-    спавнит одного муравья за ход если они остались в нутри
-    """
-    def __init__(self, y, x) -> None:
-        self.img = IMG_ANTHILL
-        self.ants_inside = randint(1, 10)
-        super().__init__(y, x, img=self.img)
-
-    def spawn_ants(self) -> None:
-        """спавн муравьев в рядом находящиеся пустые клетки"""
-        if self.ants_inside > 0:
-            closest_free_cells = game.field.find_free_nearby_cells(
-                self.x, self.y)
-            if closest_free_cells:
-                temporary_cell = choice(closest_free_cells)
-                ant = Ant(temporary_cell.y, temporary_cell.x)
-                game.field.ants.append(ant)
-                self.ants_inside -= 1
-
-
-class Player(GameObject):
-    """
-    класс игрок
-    """
-    def __init__(self, y, x) -> None:
-        self.img = IMG_PLAYER
-        super().__init__(y, x, img=self.img)
 
 
 class Game():
@@ -204,7 +20,6 @@ class Game():
     def __init__(self) -> None:
         self.field = Field()
         self.game_run = True
-        self.score_points = 0
 
     def show_the_screen(self) -> None:
         """два в одном: показ текстовой части и прорисовка поля"""
@@ -217,18 +32,18 @@ class Game():
             )
         if self.field.ants:
             for ant in self.field.ants:
-                ant.moving()
+                ant.moving(self)
         for anthill in self.field.anthills:
-            anthill.spawn_ants()
+            anthill.spawn_ants(self)
         for row in self.field.cells:
             for col in row:
-                col.cell_updater()
+                col.cell_updater(self)
                 print(col.content, end=' ')
             print()
-        self.field.get_empty_cells()
+        self.field.get_empty_cells(self)
         print(
             "\n набранно очков:"
-            f"{self.score_points}/{self.field.quantity_ants}"
+            f"{self.field.score_points}/{self.field.quantity_ants}"
             "\n "
             )
 
@@ -267,8 +82,8 @@ class Game():
         os.system('cls')
         print(
             "\n Игра законченна!"
-            F"\n вы съели:{self.score_points} - муравьев"
-            f"\nмуравьев упущенно:{self.field.quantity_ants-self.score_points}"
+            F"\n вы съели:{self.field.score_points} - муравьев"
+            f"\nмуравьев упущенно:{self.field.quantity_ants-self.field.score_points}"
             )
         self.game_run = False
 
@@ -301,7 +116,7 @@ class Game():
     def start_game(self) -> None:
         """подготовка и начало игры"""
         self.field.creating_a_field()
-        self.field.create_anthills()
+        self.field.create_anthills(self)
         self.full_verification()
         self.show_the_screen()
         while self.game_run:
