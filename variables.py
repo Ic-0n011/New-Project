@@ -1,7 +1,7 @@
-from random import randint
 ROWS = 7
 COLS = 11
-QUANTITY_ANTHILLS = randint(1, 4)
+MIN_ANTHILLS = 1
+MAX_ANTHILLS = 4
 IMG_PLAYER = "P"
 IMG_ANT = "+"
 IMG_ANTHILL = "A"

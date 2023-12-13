@@ -1,18 +1,20 @@
 from variables import *
-from random import sample
+from random import sample, randint
 from game_objets import Anthill, Player
+
+QUANTITY_ANTHILLS = randint(MIN_ANTHILLS, MAX_ANTHILLS)
 
 
 class Field():
-    
-    #класс поле
-    #поле создает и(или) хранит:
-    #    список клеток
-    #    список с пустыми клетками
-    #    муравейники
-    #    муравьев
-    #    игрока(муравьеда)
-    
+    """
+    класс поле
+    поле создает и(или) хранит:
+    список клеток
+    список с пустыми клетками
+    муравейники
+    муравьев
+    игрока(муравьеда)
+    """
     def __init__(self) -> None:
         self.rows = ROWS
         self.cols = COLS
@@ -24,7 +26,7 @@ class Field():
         self.player = Player((ROWS//2)+1, (COLS//2)+1)
 
     def creating_a_field(self) -> None:
-        #создание поля
+        """создание поля"""
         for _ in range(ROWS):
             row = [0] * self.cols
             self.cells.append(row)
@@ -34,7 +36,7 @@ class Field():
                 self.cells[y][x] = cell
 
     def get_empty_cells(self, game) -> None:
-        #создание листа с пустыми клетками
+        """создание листа с пустыми клетками"""
         self.empty_cells = []
         for row in self.cells:
             for cell in row:
@@ -43,7 +45,7 @@ class Field():
                     self.empty_cells.append(cell)
 
     def create_anthills(self, game) -> None:
-        #создание муравейников
+        """создание муравейников"""
         self.get_empty_cells(game)
         random_empty_cell = sample(self.empty_cells, QUANTITY_ANTHILLS)
         for cell in random_empty_cell:
@@ -52,7 +54,7 @@ class Field():
             self.quantity_ants += anthill.ants_inside
 
     def find_free_nearby_cells(self, game, x, y) -> list:
-        #поиск рядом находящихся пустых клеток
+        """поиск рядом находящихся пустых клеток"""
         temporary_list = []
         allowed_x = [x, x-1, x+1]
         allowed_y = [y, y-1, y+1]
@@ -67,9 +69,11 @@ class Field():
 
 
 class Cell():
-    #класс клетка
-    #клеток в игре ROWS*COLS
-    #клетка может обновиться, знает что в ней лежит
+    """
+    класс клетка
+    клеток в игре ROWS*COLS
+    клетка может обновиться, знает что в ней лежит
+    """
     def __init__(self, y=int, x=int) -> None:
         self.y = y
         self.x = x
@@ -77,7 +81,7 @@ class Cell():
         self.img = IMG_CELL
 
     def cell_updater(self, game) -> None:
-        #обновление внутреклеточного контента и картинки
+        """обновление внутреклеточного контента и картинки"""
         self.content = None
         if game.field.player.y == self.y and game.field.player.x == self.x:
             self.content = game.field.player.img

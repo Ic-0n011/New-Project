@@ -4,6 +4,7 @@ import time
 from sys import exit
 from variables import *
 from field import Field
+
 """
 игра
 field: поле, клетка игрового поля
@@ -83,7 +84,8 @@ class Game():
         print(
             "\n Игра законченна!"
             F"\n вы съели:{self.field.score_points} - муравьев"
-            f"\nмуравьев упущенно:{self.field.quantity_ants-self.field.score_points}"
+            "\nмуравьев упущенно:"
+            f"{self.field.quantity_ants-self.field.score_points}"
             )
         self.game_run = False
 
@@ -127,14 +129,12 @@ class Game():
             key = keyboard.read_event()
             if key.event_type == keyboard.KEY_DOWN:
                 self.moving_the_player(key)
+            else:
+                continue
             self.show_the_screen()
             time.sleep(0.001)
 
 
-"""
-FIXME:
-    312-314 строки - добавить ожидание момента отжатия клавиши или ее имитация 
-"""
 game = Game()
 game.start_game()
 exit()

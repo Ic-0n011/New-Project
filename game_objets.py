@@ -1,6 +1,6 @@
 from variables import *
 from abc import ABC, abstractmethod
-from random import choice
+from random import choice, randint
 
 
 class GameObject(ABC):
@@ -63,7 +63,7 @@ class Anthill(GameObject):
     def spawn_ants(self, game) -> None:
         """спавн муравьев в рядом находящиеся пустые клетки"""
         if self.ants_inside > 0:
-            closest_free_cells=game.field.find_free_nearby_cells(
+            closest_free_cells = game.field.find_free_nearby_cells(
                 game, self.x, self.y)
             if closest_free_cells:
                 temporary_cell = choice(closest_free_cells)
