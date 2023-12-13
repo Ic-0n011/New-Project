@@ -1,8 +1,8 @@
-from variables import *
+import variables
 from random import sample, randint
 from game_objets import Anthill, Player
 
-QUANTITY_ANTHILLS = randint(MIN_ANTHILLS, MAX_ANTHILLS)
+QUANTITY_ANTHILLS = randint(variables.MIN_ANTHILLS, variables.MAX_ANTHILLS)
 
 
 class Field():
@@ -16,18 +16,18 @@ class Field():
     игрока(муравьеда)
     """
     def __init__(self) -> None:
-        self.rows = ROWS
-        self.cols = COLS
+        self.rows = variables.ROWS
+        self.cols = variables.COLS
         self.anthills = []
         self.cells = []
         self.ants = []
         self.quantity_ants = 0
         self.score_points = 0
-        self.player = Player((ROWS//2)+1, (COLS//2)+1)
+        self.player = Player((variables.ROWS//2)+1, (variables.COLS//2)+1)
 
     def creating_a_field(self) -> None:
         """создание поля"""
-        for _ in range(ROWS):
+        for _ in range(variables.ROWS):
             row = [0] * self.cols
             self.cells.append(row)
         for y in range(self.rows):
@@ -63,7 +63,7 @@ class Field():
                 if (cell.x in allowed_x) and (cell.y in allowed_y):
                     if not (x == cell.x and y == cell.y):
                         cell.cell_updater(game)
-                        if cell.content == IMG_CELL:
+                        if cell.content == variables.IMG_CELL:
                             temporary_list.append(cell)
         return temporary_list
 
@@ -78,7 +78,7 @@ class Cell():
         self.y = y
         self.x = x
         self.content = None
-        self.img = IMG_CELL
+        self.img = variables.IMG_CELL
 
     def cell_updater(self, game) -> None:
         """обновление внутреклеточного контента и картинки"""

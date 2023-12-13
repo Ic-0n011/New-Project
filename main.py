@@ -2,7 +2,7 @@ import keyboard
 import os
 import time
 from sys import exit
-from variables import *
+import variables
 from field import Field
 
 """
@@ -22,13 +22,30 @@ class Game():
         self.field = Field()
         self.game_run = True
 
+    def greetings(self) -> None:
+        """приветствие и начало игры"""
+        print(
+            "Добро пожаловать в игру"
+            "\n <<Ловкий муравьед>>"
+            "\n______________________"
+            "\n Вы - голодный, но очень ловкий муравьед (вы <<P>> на поле)."
+            "\n Ваша любимая еда это муравьи (они обозначаются <<+>> на поле)."
+            "\n На поле так же есть муравейники (<<A>> на поле)"
+            "\n муравьи будут выходить из муравейников и искать выход,"
+            "\n ваша задача съесть их всех. Удачи!"
+            "\n "
+            )
+        input(
+            'Нажмите ENTER для продолжения'
+            '\n '
+            )
+
     def show_the_screen(self) -> None:
         """два в одном: показ текстовой части и прорисовка поля"""
-        os.system('cls')
         print(
-            "\n Чтобы двигаться вы можете использовать стрелки:",
-            "\n вверх, влево, впрво и вниз ",
-            "\n Если надоест играть вы можете остановить игру нажав пробел",
+            "Чтобы двигаться вы можете использовать стрелки:"
+            "\n вверх, влево, впрво и вниз "
+            "\n Если надоест играть вы можете остановить игру нажав [esc]"
             "\n "
             )
         if self.field.ants:
@@ -57,30 +74,29 @@ class Game():
             temporary_list.append(tx+ty)
         cury = self.field.player.y
         curx = self.field.player.x
-        if key.name == BUTTONS[1]:
-            if curx != COLS:
+        if key.name == variables.BUTTONS[1]:
+            if curx != variables.COLS:
                 if not (str(curx+1)+str(cury) in temporary_list):
                     curx += 1
-        elif key.name == BUTTONS[2]:
+        elif key.name == variables.BUTTONS[2]:
             if curx != 1:
                 if not (str(curx-1)+str(cury) in temporary_list):
                     curx -= 1
-        elif key.name == BUTTONS[3]:
+        elif key.name == variables.BUTTONS[3]:
             if cury != 1:
                 if not (str(curx)+str(cury-1) in temporary_list):
                     cury -= 1
-        elif key.name == BUTTONS[4]:
-            if cury != ROWS:
+        elif key.name == variables.BUTTONS[4]:
+            if cury != variables.ROWS:
                 if not (str(curx)+str(cury+1) in temporary_list):
                     cury += 1
-        elif key.name == BUTTONS[0]:
+        elif key.name == variables.BUTTONS[0]:
             self.game_run = False
         self.field.player.y = cury
         self.field.player.x = curx
 
     def end_the_game(self) -> None:
         """конец игрового цикла"""
-        os.system('cls')
         print(
             "\n Игра законченна!"
             F"\n вы съели:{self.field.score_points} - муравьев"
@@ -102,9 +118,14 @@ class Game():
             error_text.append("На поле нету муравейников")
         if not self.field.player:
             error_text.append("В игре отсутствует игрок")
-        if not (IMG_ANT or IMG_ANTHILL or IMG_CELL or IMG_ANTHILL):
+        if not (
+            variables.IMG_ANT
+            or variables.IMG_ANTHILL
+            or variables.IMG_CELL
+            or variables.IMG_ANTHILL
+                ):
             error_text.append("Один или несколько параметров IMG_ не указан")
-        if len(BUTTONS) <= 4:
+        if len(variables.BUTTONS) <= 4:
             error_text.append("Не указанны кнопки взаимодействия")
         if error_text:
             print("НАЙДЕНЫ ОШИБКИ!!!")
@@ -120,6 +141,7 @@ class Game():
         self.field.creating_a_field()
         self.field.create_anthills(self)
         self.full_verification()
+        self.greetings()
         self.show_the_screen()
         while self.game_run:
             """здесь начинается игровой цикл игры"""
@@ -131,6 +153,7 @@ class Game():
                 self.moving_the_player(key)
             else:
                 continue
+            os.system('cls')
             self.show_the_screen()
             time.sleep(0.001)
 

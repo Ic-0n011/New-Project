@@ -1,4 +1,4 @@
-from variables import *
+import variables
 from abc import ABC, abstractmethod
 from random import choice, randint
 
@@ -19,7 +19,7 @@ class Ant(GameObject):
     класс муравей
     """
     def __init__(self, y, x) -> None:
-        self.img = IMG_ANT
+        self.img = variables.IMG_ANT
         super().__init__(y, x, img=self.img)
 
     def moving(self, game) -> None:
@@ -30,12 +30,12 @@ class Ant(GameObject):
         allowed_y = [self.y-1, self.y+1]
         if randint(0, 1) == 1:
             next_x = choice(allowed_x)
-            if (next_x > COLS) or (next_x < 1):
+            if (next_x > variables.COLS) or (next_x < 1):
                 game.field.ants.remove(self)
                 return
         else:
             next_y = choice(allowed_y)
-            if (next_y > ROWS) or (next_y < 1):
+            if (next_y > variables.ROWS) or (next_y < 1):
                 game.field.ants.remove(self)
                 return
         game.field.get_empty_cells(game)
@@ -56,7 +56,7 @@ class Anthill(GameObject):
     спавнит одного муравья за ход если они остались в нутри
     """
     def __init__(self, y, x) -> None:
-        self.img = IMG_ANTHILL
+        self.img = variables.IMG_ANTHILL
         self.ants_inside = randint(1, 10)
         super().__init__(y, x, img=self.img)
 
@@ -77,5 +77,5 @@ class Player(GameObject):
     класс игрок
     """
     def __init__(self, y, x) -> None:
-        self.img = IMG_PLAYER
+        self.img = variables.IMG_PLAYER
         super().__init__(y, x, img=self.img)
