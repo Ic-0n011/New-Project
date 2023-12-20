@@ -22,32 +22,67 @@ class Game():
         self.field = Field()
         self.game_run = True
 
-    def greetings(self) -> None:
-        """приветствие и начало игры"""
+    def menu(self) -> None:
+        """Меню игры"""
+        t = 0
+        arrow1, arrow2, arrow3 = "<--", "", ""
+        arrow_list = [arrow1, arrow2, arrow3]
+        while True:
+            if t == 0:
+                arrow_list[0] = "<--"
+            else:
+                arrow_list[0] = ""
+            if t == 1:
+                arrow_list[1] = "<--"
+            else:
+                arrow_list[1] = ""
+            if t == 2:
+                arrow_list[2] = "<--"
+            else:
+                arrow_list[2] = ""
+            print(
+                "\n             <<Ловкий муравьед>>\n"
+                f"\n          |    Начать новую игру   | {arrow_list[0]}",
+                f"\n          |        Правила         | {arrow_list[1]}",
+                f"\n          |         Выход          | {arrow_list[2]}",
+                "\n\nвыберете параметр и нажмите <<enter>>"
+                )
+            key = keyboard.read_event()
+            os.system('cls')
+            if key.event_type == keyboard.KEY_DOWN:
+                if key.name == variables.BUTTONS[3]:
+                    if t != 0:
+                        t -= 1
+                elif key.name == variables.BUTTONS[4]:
+                    if t != 2:
+                        t += 1
+                elif key.name == variables.BUTTONS[0]:
+                    if t == 0:
+                        self.start_game()
+                    elif t == 1:
+                        self.rule()
+                    elif t == 2:
+                        os.system('cls')
+                        print("  . . . Подождите выходим . . .")
+                        time.sleep(2)
+                        exit()
+
+    def rule(self):
         print(
-            "Добро пожаловать в игру"
-            "\n <<Ловкий муравьед>>"
-            "\n______________________"
             "\n Вы - голодный, но очень ловкий муравьед (вы <<P>> на поле)."
             "\n Ваша любимая еда это муравьи (они обозначаются <<+>> на поле)."
-            "\n На поле так же есть муравейники (<<A>> на поле)"
-            "\n муравьи будут выходить из муравейников и искать выход,"
-            "\n ваша задача съесть их всех. Удачи!"
-            "\n "
+            "\n На поле так же есть муравейники (<<A>> на поле)."
+            "\n Муравьи будут выходить из муравейников и хаотично двигаться,"
+            "\n после того как они окажутся на краю поля они могут сбежать,"
+            "\n ну ваша поймать и задача съесть их всех. Удачи!"
+            "\n \n Чтобы двигаться вы можете использовать стрелки:"
+            "\n вверх, влево, впрво и вниз "
+            "\n Также вы можете выйти из начатой игры клавишей [esc]"
             )
-        input(
-            'Нажмите ENTER для продолжения'
-            '\n '
-            )
+        self.pause()
 
     def show_the_screen(self) -> None:
-        """два в одном: показ текстовой части и прорисовка поля"""
-        print(
-            "Чтобы двигаться вы можете использовать стрелки:"
-            "\n вверх, влево, впрво и вниз "
-            "\n Если надоест играть вы можете остановить игру нажав [esc]"
-            "\n "
-            )
+        """прорисовка поля и обновление параметров"""
         if self.field.ants:
             for ant in self.field.ants:
                 ant.moving(self)
@@ -90,20 +125,30 @@ class Game():
             if cury != variables.ROWS:
                 if not (str(curx)+str(cury+1) in temporary_list):
                     cury += 1
-        elif key.name == variables.BUTTONS[0]:
+        elif key.name == variables.BUTTONS[5]:
             self.game_run = False
         self.field.player.y = cury
         self.field.player.x = curx
 
     def end_the_game(self) -> None:
         """конец игрового цикла"""
+        os.system('cls')
         print(
             "\n Игра законченна!"
             F"\n вы съели:{self.field.score_points} - муравьев"
             "\nмуравьев упущенно:"
             f"{self.field.quantity_ants-self.field.score_points}"
             )
-        self.game_run = False
+        self.pause()
+
+    def pause(self):
+        input("\n\nнажмите <<enter>> для продолжений")
+        while True:
+            key = keyboard.read_event()
+            if key.event_type == keyboard.KEY_DOWN:
+                if key.name == variables.BUTTONS[0]:
+                    self.game_run = False
+                    break
 
     def full_verification(self) -> None:
         """
@@ -141,7 +186,6 @@ class Game():
         self.field.creating_a_field()
         self.field.create_anthills(self)
         self.full_verification()
-        self.greetings()
         self.show_the_screen()
         while self.game_run:
             """здесь начинается игровой цикл игры"""
@@ -159,5 +203,5 @@ class Game():
 
 
 game = Game()
-game.start_game()
+game.menu()
 exit()

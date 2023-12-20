@@ -7,4 +7,4 @@ IMG_PLAYER = "P"
 IMG_ANT = "+"
 IMG_ANTHILL = "A"
 IMG_CELL = "."
-BUTTONS = ['space', 'right', 'left', 'up', 'down']
+BUTTONS = ['enter', 'right', 'left', 'up', 'down', 'esc']
