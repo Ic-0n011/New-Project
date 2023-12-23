@@ -1,30 +1,63 @@
-# import os
-fielname = 'records.txt'
+class TableOfRecords:
+    """
+    класс таблица рекордов
+    """
+    def __init__(self, filename):
+        self.filename = filename
+        self.records = []  
+        file_content = None  
+        try:  
+            with open(self.filename, 'r', encoding="utf-8") as file:  
+                file_content = file.read()  
+        except FileNotFoundError:  
+            self.table_of_cors = False  
+        else:  
+            if file_content:  
+                self.records.extend(self.parse_content(file_content))  
+                self.table_of_cors = True
 
+    def parse_content(self, content) -> list:
+        """записывает рекорды из текстового файла в лист как словарь"""
+        content = content.split('\n')
+        return_list = []
+        for item in content:
+            if item != "":
+                list_NP = item.split(":")
+                return_list.append(
+                    {'name': list_NP[0], 'points': list_NP[1]}
+                    )  
+        return return_list
+    
+    def add_record(self, record) -> None:
+        """создание нового рекорда"""
+        if not any(
+            record['name'] == old_record['name'] for old_record in self.records
+            ):
+            self.records.append(record)
+        else:
+            old_record = next(
+                old_rec for old_rec in self.records 
+                if old_rec['name'] == record['name']
+                )
+            if int(old_record['points']) < int(record['points']):
+                self.records[self.records.index(old_record)] = record
+            else:
+                print("извините но ваш старый рекорд был лучше")
+                return
+        print("новый рекорд был успешно добавлен!")
 
-class Record:
-    def __init__(self):
-        self.old_records = []
-        self.new_records = []
+    def write_records_to_file(self) -> None:
+        """перезаписывает текстовый файл"""
+        with open(self.filename, 'w', encoding="utf-8") as f:
+            for record in self.records:
+                name, points = record["name"], record["points"]
+                f.write(f"{name}:{points}\n")
 
-    def print_records(self):
-        for record in self.old_records:
-            print(f"Name: {record[name]}, Score: {record[score]}")
+    def show_scores(self):
+        """показывает текущие рекорды"""
+        for score in self.records:
+            print(f"Name: {score['name']}, Points: {score['points']}")
 
-    def sort_records(self):
-        self.old_records.sort(key=lambda x: int(x.split(' ')[1]), reverse=True)
-        with open('records.txt', 'w') as file:
-            for record in self.old_records[:10]:
-                file.write(record + '\n')
-
-    def update_record(self, name, score):
-        pass
-
-
-record_table = Record()
-with open(fielname, 'r') as file:
-    for record in file.readlines():
-        name, score = record.split()
-        record_table.new_records.append([name, score])
-record_table.print_records()
-print(record_table.old_records, " == ", record_table.new_records)
+    def sorted_scores(self):
+        """сортировка рекордов по их убыванию"""
+        self.records = sorted(self.records, key=lambda x: -(int(x['points'])))

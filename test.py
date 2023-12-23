@@ -1,9 +1,10 @@
-def split_record(record):
-    name, score = record.split()
-    return name, int(score)
+scores = [
+    {'name': 'John', 'points': 100},
+    {'name': 'Jane', 'points': 90},
+]
 
+def sort_by_points(score):
+    return -score['points']
 
-record = "John 100"
-name, score = split_record(record)
-print(f"Name: {name}, Score: {score}")
-# Output: Name: John, Score: 100
+sorted_scores = sorted(scores, key=sort_by_points)
+print(sorted_scores)

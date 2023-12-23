@@ -55,7 +55,7 @@ class Field():
 
     def find_free_nearby_cells(self, game, x, y) -> list:
         """поиск рядом находящихся пустых клеток"""
-        temporary_list = []
+        list_of_coordinatess = []
         allowed_x = [x, x-1, x+1]
         allowed_y = [y, y-1, y+1]
         for row in self.cells:
@@ -64,8 +64,8 @@ class Field():
                     if not (x == cell.x and y == cell.y):
                         cell.cell_updater(game)
                         if cell.content == variables.IMG_CELL:
-                            temporary_list.append(cell)
-        return temporary_list
+                            list_of_coordinatess.append(cell)
+        return list_of_coordinatess
 
 
 class Cell():

@@ -4,13 +4,7 @@ import time
 from sys import exit
 import variables
 from field import Field
-
-"""
-игра
-field: поле, клетка игрового поля
-game objects: муравей, муравьед, муравейник
-все глобальные переменные находятся в variables.py
-"""
+from Table_of_Record import TableOfRecords
 
 
 class Game():
@@ -18,56 +12,69 @@ class Game():
     класс игра
     включает в себя игровой цикл и обновление поля
     """
-    def __init__(self) -> None:
+    def __init__(self, nike) -> None:
         self.field = Field()
+        self.player_name = nike
+        self.tableofrecord = TableOfRecords(filename='records.txt')
         self.game_run = True
 
     def menu(self) -> None:
         """Меню игры"""
-        t = 0
-        arrow1, arrow2, arrow3 = "<--", "", ""
-        arrow_list = [arrow1, arrow2, arrow3]
+        variable = 0
+        arrow1, arrow2, arrow3, arrow4 = "<--", "", "", ""
+        arrow_list = [arrow1, arrow2, arrow3, arrow4]
         while True:
-            if t == 0:
+            if variable == 0:
                 arrow_list[0] = "<--"
             else:
                 arrow_list[0] = ""
-            if t == 1:
+            if variable == 1:
                 arrow_list[1] = "<--"
             else:
                 arrow_list[1] = ""
-            if t == 2:
+            if variable == 2:
                 arrow_list[2] = "<--"
             else:
                 arrow_list[2] = ""
+            if variable == 3:
+                arrow_list[3] = "<--"
+            else:
+                arrow_list[3] = ""
             print(
                 "\n             <<Ловкий муравьед>>\n"
+                f"\n\n       Добро пожаловать {self.player_name}!!!\n"
                 f"\n          |    Начать новую игру   | {arrow_list[0]}",
-                f"\n          |        Правила         | {arrow_list[1]}",
-                f"\n          |         Выход          | {arrow_list[2]}",
+                f"\n          |    таблица рекордов    | {arrow_list[1]}",
+                f"\n          |        Правила         | {arrow_list[2]}",
+                f"\n          |         Выход          | {arrow_list[3]}",
                 "\n\nвыберете параметр и нажмите <<enter>>"
                 )
             key = keyboard.read_event()
             os.system('cls')
             if key.event_type == keyboard.KEY_DOWN:
                 if key.name == variables.BUTTONS[3]:
-                    if t != 0:
-                        t -= 1
+                    if variable != 0:
+                       variable -= 1
                 elif key.name == variables.BUTTONS[4]:
-                    if t != 2:
-                        t += 1
+                    if variable != 3:
+                       variable += 1
                 elif key.name == variables.BUTTONS[0]:
-                    if t == 0:
+                    if variable == 0:
                         self.start_game()
-                    elif t == 1:
-                        self.rule()
-                    elif t == 2:
+                    elif variable == 1:
+                        self.tableofrecord.show_scores()
+                        self.pause()
+                    elif variable == 2:
+                        self.show_rule()
+                    elif variable == 3:
                         os.system('cls')
                         print("  . . . Подождите выходим . . .")
+                        self.tableofrecord.sorted_scores()
+                        self.tableofrecord.write_records_to_file()
                         time.sleep(2)
                         exit()
 
-    def rule(self):
+    def show_rule(self):
         print(
             "\n Вы - голодный, но очень ловкий муравьед (вы <<P>> на поле)."
             "\n Ваша любимая еда это муравьи (они обозначаются <<+>> на поле)."
@@ -81,7 +88,7 @@ class Game():
             )
         self.pause()
 
-    def show_the_screen(self) -> None:
+    def show_the_update_screen(self) -> None:
         """прорисовка поля и обновление параметров"""
         if self.field.ants:
             for ant in self.field.ants:
@@ -102,33 +109,33 @@ class Game():
 
     def moving_the_player(self, key) -> None:
         """движение игрока при помощи кнопок"""
-        temporary_list = []
+        list_of_coordinatess = []
         for anthill in self.field.anthills:
             tx = str(anthill.x)
             ty = str(anthill.y)
-            temporary_list.append(tx+ty)
-        cury = self.field.player.y
-        curx = self.field.player.x
+            list_of_coordinatess.append(tx+ty)
+        current_y = self.field.player.y
+        current_x = self.field.player.x
         if key.name == variables.BUTTONS[1]:
-            if curx != variables.COLS:
-                if not (str(curx+1)+str(cury) in temporary_list):
-                    curx += 1
+            if current_x != variables.COLS:
+                if not (str(current_x+1)+str(current_y) in list_of_coordinatess):
+                    current_x += 1
         elif key.name == variables.BUTTONS[2]:
-            if curx != 1:
-                if not (str(curx-1)+str(cury) in temporary_list):
-                    curx -= 1
+            if current_x != 1:
+                if not (str(current_x-1)+str(current_y) in list_of_coordinatess):
+                    current_x -= 1
         elif key.name == variables.BUTTONS[3]:
-            if cury != 1:
-                if not (str(curx)+str(cury-1) in temporary_list):
-                    cury -= 1
+            if current_y != 1:
+                if not (str(current_x)+str(current_y-1) in list_of_coordinatess):
+                    current_y -= 1
         elif key.name == variables.BUTTONS[4]:
-            if cury != variables.ROWS:
-                if not (str(curx)+str(cury+1) in temporary_list):
-                    cury += 1
+            if current_y != variables.ROWS:
+                if not (str(current_x)+str(current_y+1) in list_of_coordinatess):
+                    current_y += 1
         elif key.name == variables.BUTTONS[5]:
             self.game_run = False
-        self.field.player.y = cury
-        self.field.player.x = curx
+        self.field.player.y = current_y
+        self.field.player.x = current_x
 
     def end_the_game(self) -> None:
         """конец игрового цикла"""
@@ -139,6 +146,10 @@ class Game():
             "\nмуравьев упущенно:"
             f"{self.field.quantity_ants-self.field.score_points}"
             )
+        record = {'name': self.player_name, 'points': self.field.score_points}
+        self.tableofrecord.add_record(record)
+        self.tableofrecord.sorted_scores()
+        self.tableofrecord.write_records_to_file()
         self.pause()
 
     def pause(self):
@@ -153,42 +164,36 @@ class Game():
     def full_verification(self) -> None:
         """
         проверяет наличие ошибок
-        если находит ошибку то складывает ее в лист
-        если лист не пустой то печатает его и выходит из программы
         """
-        error_text = []
         if len(self.field.cells) <= 2:
-            error_text.append("Ошибка поля")
-        if len(self.field.anthills) <= 0:
-            error_text.append("На поле нету муравейников")
-        if not self.field.player:
-            error_text.append("В игре отсутствует игрок")
-        if not (
+            print("Ошибка поля")
+            exit()
+        elif len(self.field.anthills) <= 0:
+            print("На поле нету муравейников")
+            exit()
+        elif not self.field.player:
+            print("В игре отсутствует игрок")
+            exit()
+        elif not (
             variables.IMG_ANT
             or variables.IMG_ANTHILL
             or variables.IMG_CELL
             or variables.IMG_ANTHILL
                 ):
-            error_text.append("Один или несколько параметров IMG_ не указан")
-        if len(variables.BUTTONS) <= 4:
-            error_text.append("Не указанны кнопки взаимодействия")
-        if error_text:
-            print("НАЙДЕНЫ ОШИБКИ!!!")
-            print("----")
-            print(
-                ", ".join(error_text) if len(error_text) > 1 else error_text[0]
-                )
-            print("----")
+            print("Один или несколько параметров IMG_ не указан")
             exit()
+        elif len(variables.BUTTONS) <= 4:
+            print("Не указанны кнопки взаимодействия")
+            exit()
+
 
     def start_game(self) -> None:
         """подготовка и начало игры"""
         self.field.creating_a_field()
         self.field.create_anthills(self)
         self.full_verification()
-        self.show_the_screen()
+        self.show_the_update_screen()
         while self.game_run:
-            """здесь начинается игровой цикл игры"""
             if len(self.field.ants) <= 0:
                 self.end_the_game()
                 break
@@ -198,10 +203,32 @@ class Game():
             else:
                 continue
             os.system('cls')
-            self.show_the_screen()
-            time.sleep(0.001)
+            self.show_the_update_screen()
 
 
-game = Game()
+print(
+    "Добро пожаловать в игру ЛОВКИЙ МУРАВЕД!!!"
+    "\nЕсли вы хотите продолжить то  вам необходимо придумать свой ник!"
+    "\nОбратите внимание что ник должен состоять не менее чем из 3 символов"
+    "\nа также не более чем из 8 смиволов"
+    )
+patience = 2
+while True:
+    time.sleep(0.5)
+    nike = input("\nнапишите свой игровой ник: ")
+    if len(nike) < 3 or len(nike) > 8 or not nike:
+        if patience == 0:
+            print("вы ввели ник неправильно несколько раз")
+            print("поэтому мы присвоили вам ник <Муравьед")
+            nike = "Муравьед"
+            time.sleep(1.5)
+            break
+        print("такой ник не допустим, поробуйте еще раз")
+        patience -= 1
+    else:
+        break
+
+
+game = Game(nike)
 game.menu()
 exit()
