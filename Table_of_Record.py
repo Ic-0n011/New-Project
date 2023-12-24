@@ -53,11 +53,11 @@ class TableOfRecords:
                 name, points = record["name"], record["points"]
                 f.write(f"{name}:{points}\n")
 
-    def show_scores(self):
+    def show_scores(self) -> None:
         """показывает текущие рекорды"""
         for score in self.records:
             print(f"Name: {score['name']}, Points: {score['points']}")
 
-    def sorted_scores(self):
+    def sorted_scores(self) -> None:
         """сортировка рекордов по их убыванию"""
         self.records = sorted(self.records, key=lambda x: -(int(x['points'])))
