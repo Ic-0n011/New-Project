@@ -40,7 +40,7 @@ class Field():
         self.empty_cells = []
         for row in self.cells:
             for cell in row:
-                cell.cell_updater(game)
+                cell.cell_updater(game=game) # FIXME: AttributeError: 'int' object has no attribute 'cell_updater' 
                 if cell.content == cell.img:
                     self.empty_cells.append(cell)
 

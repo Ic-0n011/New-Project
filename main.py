@@ -5,16 +5,17 @@ from sys import exit
 import variables
 from field import Field
 from Table_of_Record import TableOfRecords
+import string
 
+ALPHABET = string.ascii_uppercase
 
 class Game():
     """
     класс игра
     включает в себя игровой цикл и обновление поля
     """
-    def __init__(self, nike) -> None:
+    def __init__(self) -> None:
         self.field = Field()
-        self.player_name = nike
         self.tableofrecord = TableOfRecords(filename='records.txt')
         self.game_run = True
 
@@ -41,8 +42,7 @@ class Game():
             else:
                 arrow_list[3] = ""
             print(
-                "\n             <<Ловкий муравьед>>\n"
-                f"\n\n       Добро пожаловать {self.player_name}!!!\n"
+                "\n             <<Ловкий муравьед>>\n",
                 f"\n          |    Начать новую игру   | {arrow_list[0]}",
                 f"\n          |    таблица рекордов    | {arrow_list[1]}",
                 f"\n          |        Правила         | {arrow_list[2]}",
@@ -146,10 +146,16 @@ class Game():
             "\nмуравьев упущенно:"
             f"{self.field.quantity_ants-self.field.score_points}"
             )
-        record = {'name': self.player_name, 'points': self.field.score_points}
-        self.tableofrecord.add_record(record)
-        self.tableofrecord.sorted_scores()
-        self.tableofrecord.write_records_to_file()
+        if self.tableofrecord.compare_records(self.field.score_points):
+            os.system('cls')
+            print("Вау у вас новый рекорд! это нужно запомнить")
+            print("запишите новый рекорд в таблицу рекордов")
+            self.pause()
+            record_name = self.get_name()
+            record = {'name': record_name, 'points': self.field.score_points}
+            self.tableofrecord.add_record(record)
+            self.tableofrecord.sorted_scores()
+            self.tableofrecord.write_records_to_file()
         self.pause()
 
     def pause(self):
@@ -179,13 +185,36 @@ class Game():
             or variables.IMG_ANTHILL
             or variables.IMG_CELL
             or variables.IMG_ANTHILL
+            or ALPHABET
                 ):
             print("Один или несколько параметров IMG_ не указан")
             exit()
-        elif len(variables.BUTTONS) <= 4:
+        elif len(variables.BUTTONS) < 6:
             print("Не указанны кнопки взаимодействия")
             exit()
 
+    def get_name(self) -> str:
+        name = ""
+        letter = 0
+        for _ in range(5):
+            while True:
+                os.system('cls')
+                print("--ВВЕДИТЕ-ИМЯ-РЕКОРДА--")
+                print("для выбора вам нужно использовать стрелки вверх и вниз")
+                print("вы выбираете из букв от A до Z")
+                print(name, ALPHABET[letter])
+                key = keyboard.read_event()
+                if key.event_type == keyboard.KEY_DOWN:
+                    if key.name == variables.BUTTONS[3]:
+                        letter -= 1
+                    if key.name == variables.BUTTONS[4]:
+                        letter += 1
+                    if key.name == variables.BUTTONS[0]:
+                        break
+                if letter == -26 or letter == 26:
+                    letter = 0
+            name = name + ALPHABET[letter]
+        return name
 
     def start_game(self) -> None:
         """подготовка и начало игры"""
@@ -205,30 +234,6 @@ class Game():
             os.system('cls')
             self.show_the_update_screen()
 
-
-print(
-    "Добро пожаловать в игру ЛОВКИЙ МУРАВЕД!!!"
-    "\nЕсли вы хотите продолжить то  вам необходимо придумать свой ник!"
-    "\nОбратите внимание что ник должен состоять не менее чем из 3 символов"
-    "\nа также не более чем из 8 смиволов"
-    )
-patience = 2
-while True:
-    time.sleep(0.5)
-    nike = input("\nнапишите свой игровой ник: ")
-    if len(nike) < 3 or len(nike) > 8 or not nike:
-        if patience == 0:
-            print("вы ввели ник неправильно несколько раз")
-            print("поэтому мы присвоили вам ник <Муравьед")
-            nike = "Муравьед"
-            time.sleep(1.5)
-            break
-        print("такой ник не допустим, поробуйте еще раз")
-        patience -= 1
-    else:
-        break
-
-
-game = Game(nike)
+game = Game()
 game.menu()
 exit()

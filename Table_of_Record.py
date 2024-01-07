@@ -42,7 +42,7 @@ class TableOfRecords:
             if int(old_record['points']) < int(record['points']):
                 self.records[self.records.index(old_record)] = record
             else:
-                print("извините но ваш старый рекорд был лучше")
+                print("извините но старый рекорд был лучше")
                 return
         print("новый рекорд был успешно добавлен!")
 
@@ -56,8 +56,20 @@ class TableOfRecords:
     def show_scores(self) -> None:
         """показывает текущие рекорды"""
         for score in self.records:
-            print(f"Name: {score['name']}, Points: {score['points']}")
+            print(f"Имя: {score['name']}, рекорд: {score['points']}")
 
     def sorted_scores(self) -> None:
         """сортировка рекордов по их убыванию"""
         self.records = sorted(self.records, key=lambda x: -(int(x['points'])))
+
+    def compare_records(self, new_score):
+        """сравнивает набранные очки со старыми"""
+        if len(self.records) < 10:
+            return True
+        else:
+            self.sorted_scores()
+            if new_score > self.records[9]:
+                self.records.pop(9)
+                return True
+            else:
+                return False
