@@ -15,7 +15,6 @@ class Game():
     включает в себя игровой цикл и обновление поля
     """
     def __init__(self) -> None:
-        self.field = Field()
         self.tableofrecord = TableOfRecords(filename='records.txt')
         self.game_run = True
 
@@ -218,6 +217,7 @@ class Game():
 
     def start_game(self) -> None:
         """подготовка и начало игры"""
+        self.field = Field()
         self.field.creating_a_field()
         self.field.create_anthills(self)
         self.full_verification()
