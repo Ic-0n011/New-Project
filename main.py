@@ -9,6 +9,7 @@ import string
 
 ALPHABET = string.ascii_uppercase
 
+
 class Game():
     """
     класс игра
@@ -16,7 +17,6 @@ class Game():
     """
     def __init__(self) -> None:
         self.tableofrecord = TableOfRecords(filename='records.txt')
-        self.game_run = True
 
     def menu(self) -> None:
         """Меню игры"""
@@ -53,10 +53,10 @@ class Game():
             if key.event_type == keyboard.KEY_DOWN:
                 if key.name == variables.BUTTONS[3]:
                     if variable != 0:
-                       variable -= 1
+                        variable -= 1
                 elif key.name == variables.BUTTONS[4]:
                     if variable != 3:
-                       variable += 1
+                        variable += 1
                 elif key.name == variables.BUTTONS[0]:
                     if variable == 0:
                         self.start_game()
@@ -108,28 +108,28 @@ class Game():
 
     def moving_the_player(self, key) -> None:
         """движение игрока при помощи кнопок"""
-        list_of_coordinatess = []
+        list_of_coords = []
         for anthill in self.field.anthills:
             tx = str(anthill.x)
             ty = str(anthill.y)
-            list_of_coordinatess.append(tx+ty)
+            list_of_coords.append(tx+ty)
         current_y = self.field.player.y
         current_x = self.field.player.x
         if key.name == variables.BUTTONS[1]:
             if current_x != variables.COLS:
-                if not (str(current_x+1)+str(current_y) in list_of_coordinatess):
+                if not (str(current_x+1)+str(current_y) in list_of_coords):
                     current_x += 1
         elif key.name == variables.BUTTONS[2]:
             if current_x != 1:
-                if not (str(current_x-1)+str(current_y) in list_of_coordinatess):
+                if not (str(current_x-1)+str(current_y) in list_of_coords):
                     current_x -= 1
         elif key.name == variables.BUTTONS[3]:
             if current_y != 1:
-                if not (str(current_x)+str(current_y-1) in list_of_coordinatess):
+                if not (str(current_x)+str(current_y-1) in list_of_coords):
                     current_y -= 1
         elif key.name == variables.BUTTONS[4]:
             if current_y != variables.ROWS:
-                if not (str(current_x)+str(current_y+1) in list_of_coordinatess):
+                if not (str(current_x)+str(current_y+1) in list_of_coords):
                     current_y += 1
         elif key.name == variables.BUTTONS[5]:
             self.game_run = False
@@ -218,6 +218,7 @@ class Game():
     def start_game(self) -> None:
         """подготовка и начало игры"""
         self.field = Field()
+        self.game_run = True
         self.field.creating_a_field()
         self.field.create_anthills(self)
         self.full_verification()
@@ -233,6 +234,7 @@ class Game():
                 continue
             os.system('cls')
             self.show_the_update_screen()
+
 
 game = Game()
 game.menu()
